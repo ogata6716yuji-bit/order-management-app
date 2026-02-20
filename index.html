@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ff6b35">
+<link rel="manifest" href="/order-management-app/manifest.json" crossorigin="use-credentials">
+<link rel="apple-touch-icon" href="/order-management-app/icon-192.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORDER MGR</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0f;--sf:#1a1a1a;--sf2:#242424;--sf3:#2e2e2e;--bd:#303030;--ac:#ff6b35;--ac2:#ffd166;--gn:#06d6a0;--bl:#118ab2;--pu:#9b59b6;--rd:#ef476f;--tx:#f0f0f0;--tx2:#888;--tx3:#555;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;}
+header{background:var(--sf);border-bottom:1px solid var(--bd);padding:0 18px;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:100;}
+.logo{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--ac);letter-spacing:2px;}
+.logo span{color:var(--tx2);font-weight:400;}
+.hright{display:flex;align-items:center;gap:12px;}
+.langbtn{padding:5px 12px;border-radius:6px;border:1px solid var(--bd);background:var(--sf2);color:var(--tx2);cursor:pointer;font-size:12px;font-family:'Space Mono',monospace;transition:all .15s;}
+.langbtn:hover,.langbtn.active{border-color:var(--ac);color:var(--ac);}
+.hclock{font-family:'Space Mono',monospace;font-size:13px;color:var(--tx2);text-align:right;}
+.hdate{font-size:10px;color:var(--tx3);}
+/* ── Layout: sidebar on landscape, top-bar on portrait ── */
+.app{display:grid;grid-template-columns:205px 1fr;height:calc(100vh - 54px);}
+nav{background:var(--sf);border-right:1px solid var(--bd);padding:10px 0;overflow-y:auto;display:flex;flex-direction:column;gap:1px;}
+.nsec{padding:0 8px;margin-bottom:2px;}
+.nlbl{font-size:9px;letter-spacing:2px;color:var(--tx3);text-transform:uppercase;padding:7px 8px 3px;font-family:'Space Mono',monospace;}
+.nb{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;background:none;border:none;border-radius:6px;color:var(--tx2);cursor:pointer;font-size:13px;font-family:'Noto Sans JP',sans-serif;transition:all .15s;text-align:left;}
+.nb:hover{background:var(--sf2);color:var(--tx);}
+.nb.active{background:rgba(255,107,53,.15);color:var(--ac);}
+.nb .ic{font-size:15px;width:19px;text-align:center;}
+.nb .nbtxt{display:inline;}
+.nbg{margin-left:auto;background:var(--ac);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;font-family:'Space Mono',monospace;}
+.ndiv{border:none;border-top:1px solid var(--bd);margin:5px 8px;}
+main{overflow-y:auto;padding:18px;}
+
+/* ── Portrait / narrow screen: compact top nav ── */
+@media (max-width:680px),(max-aspect-ratio:3/4){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:calc(100vh - 54px);}
+  nav{flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:0;border-right:none;border-bottom:1px solid var(--bd);height:auto;gap:0;align-items:stretch;
+      -webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  nav::-webkit-scrollbar{display:none;}
+  .nsec{display:flex;flex-direction:row;padding:0;margin:0;align-items:stretch;}
+  .nlbl{display:none;}
+  .ndiv{border-top:none;border-right:1px solid var(--bd);margin:8px 0;width:1px;height:auto;flex-shrink:0;}
+  .nb{flex-direction:column;gap:2px;padding:8px 10px;border-radius:0;font-size:10px;white-space:nowrap;min-width:60px;justify-content:center;align-items:center;border-bottom:2px solid transparent;}
+  .nb.active{background:transparent;border-bottom-color:var(--ac);color:var(--ac);}
+  .nb .ic{font-size:18px;width:auto;}
+  .nb .nbtxt{font-size:9px;line-height:1.2;}
+  .nbg{position:absolute;top:4px;right:4px;font-size:9px;padding:0 4px;}
+  .nb{position:relative;}
+  main{padding:12px;}
+}
+.page{display:none;}.page.active{display:block;}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:10px;}
+.pt{font-size:18px;font-weight:700;}.ps{font-size:12px;color:var(--tx2);margin-top:2px;}
+.btn{padding:10px 18px;border-radius:8px;border:none;cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.bp{background:var(--ac);color:#fff;}.bp:hover{background:#e05528;}
+.bs{background:var(--sf2);color:var(--tx);border:1px solid var(--bd);}.bs:hover{border-color:var(--ac);color:var(--ac);}
+.bg{background:var(--gn);color:#000;}.bg:hover{opacity:.85;}
+.bsm{padding:6px 12px;font-size:12px;}
+.bgh{background:transparent;border:1px solid var(--bd);color:var(--tx2);}.bgh:hover{border-color:var(--tx2);color:var(--tx);}
+.brd{background:transparent;border:1px solid var(--rd);color:var(--rd);}.brd:hover{background:var(--rd);color:#fff;}
+.filters{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+.fb{padding:5px 12px;border-radius:20px;border:1px solid var(--bd);background:none;color:var(--tx2);cursor:pointer;font-size:11px;font-family:'Noto Sans JP',sans-serif;transition:all .15s;}
+.fb:hover,.fb.active{background:var(--ac);border-color:var(--ac);color:#fff;}
+.sbox{position:relative;}
+.sbox input{background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:6px 10px 6px 28px;color:var(--tx);font-size:12px;font-family:'Noto Sans JP',sans-serif;width:180px;outline:none;transition:border-color .15s;}
+.sbox input:focus{border-color:var(--ac);}
+.sbox::before{content:'🔍';position:absolute;left:7px;top:50%;transform:translateY(-50%);font-size:11px;}
+.fg{margin-bottom:13px;}
+.fl{font-size:11px;color:var(--tx2);margin-bottom:5px;display:block;}
+.fi{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:8px 10px;color:var(--tx);font-size:13px;font-family:'Noto Sans JP',sans-serif;outline:none;transition:border-color .15s;}
+.fi:focus{border-color:var(--ac);}
+select.fi{cursor:pointer;}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:200;backdrop-filter:blur(4px);justify-content:center;align-items:center;}
+.mo.open{display:flex;}
+.modal{background:var(--sf);border:1px solid var(--bd);border-radius:13px;padding:20px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;animation:su .2s ease;}
+.mw{width:660px;}
+@keyframes su{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.mttl{font-size:16px;font-weight:700;margin-bottom:16px;}
+.mac{display:flex;justify-content:flex-end;gap:7px;margin-top:18px;}
+/* order cards */
+.ogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+.ocard{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:hidden;transition:all .2s;animation:fi .3s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.ocard:hover{border-color:var(--ac);transform:translateY(-2px);box-shadow:0 7px 20px rgba(0,0,0,.3);}
+.och{padding:11px 13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd);}
+.otbl{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--ac);}
+.otm{font-size:11px;color:var(--tx3);font-family:'Space Mono',monospace;}
+.sb{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:500;white-space:nowrap;}
+.spp{background:rgba(255,107,53,.2);color:var(--ac);border:1px solid rgba(255,107,53,.4);}
+.sck{background:rgba(255,209,102,.2);color:var(--ac2);border:1px solid rgba(255,209,102,.4);}
+.sdn{background:rgba(6,214,160,.2);color:var(--gn);border:1px solid rgba(6,214,160,.4);}
+.oitems{padding:9px 13px;}
+.oirow{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;flex-wrap:wrap;}
+.oirow:last-child{border-bottom:none;}
+.oinm{flex:1;color:var(--tx2);}
+.oiqt{font-family:'Space Mono',monospace;font-size:11px;color:var(--tx3);margin-right:3px;}
+.oipr{font-family:'Space Mono',monospace;font-size:11px;margin-right:5px;}
+.isb{font-size:12px;padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-family:'Noto Sans JP',sans-serif;white-space:nowrap;transition:all .13s;font-weight:600;}
+.isb-p{background:rgba(255,107,53,.15);color:var(--ac);border:1px solid rgba(255,107,53,.3);}
+.isb-p:hover{background:var(--ac);color:#fff;}
+.isb-c{background:rgba(255,209,102,.15);color:var(--ac2);border:1px solid rgba(255,209,102,.3);}
+.isb-c:hover{background:var(--ac2);color:#000;}
+.isb-d{background:rgba(6,214,160,.15);color:var(--gn);border:1px solid rgba(6,214,160,.3);cursor:default;}
+.isb-k{background:rgba(17,138,178,.2);color:var(--bl);border:1px solid rgba(17,138,178,.4);}
+.isb-k:hover{background:var(--bl);color:#fff;}
+.isb-x{background:rgba(239,71,111,.12);color:var(--rd);border:1px solid rgba(239,71,111,.3);}
+.isb-x:hover{background:var(--rd);color:#fff;}
+.ocf{padding:9px 13px;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
+.otot{font-family:'Space Mono',monospace;font-weight:700;font-size:14px;}
+/* tables */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:12px;}
+.tcard{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:hidden;transition:border-color .2s;}
+.tcard.occ{border-color:var(--ac);}
+.tchead{padding:10px 13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .15s;}
+.tchead:hover{background:var(--sf2);}
+.tcard.occ .tchead{background:rgba(255,107,53,.06);}
+.tnum{font-family:'Space Mono',monospace;font-weight:700;font-size:13px;}
+.tcard.occ .tnum{color:var(--ac);}
+.tcard:not(.occ) .tnum{color:var(--tx3);}
+.tppl{font-size:11px;color:var(--tx2);margin-top:1px;}
+.tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.docc{background:var(--ac);box-shadow:0 0 5px var(--ac);}
+.demp{background:var(--tx3);}
+.tords{padding:7px 13px;}
+.tor{display:flex;align-items:flex-start;gap:7px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.tor:last-child{border-bottom:none;}
+.tortm{font-family:'Space Mono',monospace;font-size:10px;color:var(--tx3);min-width:36px;padding-top:2px;flex-shrink:0;}
+.torcont{flex:1;}
+.torline{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--tx2);line-height:1.9;}
+.timg{width:16px;height:16px;object-fit:cover;border-radius:3px;}
+.tib{font-size:12px;padding:6px 11px;border-radius:6px;border:none;cursor:pointer;font-family:'Noto Sans JP',sans-serif;transition:all .13s;margin-left:3px;font-weight:600;}
+.tib-p{background:rgba(255,107,53,.15);color:var(--ac);border:1px solid rgba(255,107,53,.3);}
+.tib-p:hover{background:var(--ac);color:#fff;}
+.tib-c{background:rgba(255,209,102,.15);color:var(--ac2);border:1px solid rgba(255,209,102,.3);}
+.tib-c:hover{background:var(--ac2);color:#000;}
+.tib-d{background:rgba(6,214,160,.15);color:var(--gn);border:1px solid rgba(6,214,160,.3);cursor:default;}
+.tib-k{background:rgba(17,138,178,.2);color:var(--bl);border:1px solid rgba(17,138,178,.4);}
+.tib-k:hover{background:var(--bl);color:#fff;}
+.tib-x{background:rgba(239,71,111,.12);color:var(--rd);border:1px solid rgba(239,71,111,.3);}
+.tib-x:hover{background:var(--rd);color:#fff;}
+.torsub{font-family:'Space Mono',monospace;font-size:11px;color:var(--tx);margin-top:3px;}
+.tcfoot{padding:9px 13px;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;background:var(--sf2);}
+.tcfl{display:flex;flex-direction:column;gap:2px;}
+.tftl{font-size:10px;color:var(--tx3);}
+.tfdone{font-size:11px;color:var(--gn);font-family:'Space Mono',monospace;}
+.tftot{font-family:'Space Mono',monospace;font-weight:700;font-size:14px;color:var(--ac2);}
+.tcfr{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.tempty{padding:16px 13px;text-align:center;color:var(--tx3);font-size:12px;cursor:pointer;}
+.tempty:hover{color:var(--tx2);}
+/* menu cards */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:12px;}
+.mcard{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:13px;transition:all .2s;animation:fi .3s ease;}
+.mcard:hover{border-color:var(--ac);transform:translateY(-2px);}
+.mimgw{width:50px;height:50px;border-radius:8px;overflow:hidden;margin-bottom:8px;background:var(--sf2);display:flex;align-items:center;justify-content:center;}
+.mimgw img{width:100%;height:100%;object-fit:cover;}
+.memo{font-size:28px;}
+.mnm{font-size:13px;font-weight:500;margin-bottom:2px;}
+.mct{font-size:10px;color:var(--tx3);margin-bottom:6px;}
+.mpr{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--ac2);}
+.msales{font-size:10px;color:var(--tx2);font-family:'Space Mono',monospace;margin-top:3px;}
+.mbtns{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;margin-top:4px;}
+.msales span{color:var(--gn);font-weight:700;}
+.mft{display:flex;align-items:center;justify-content:space-between;margin-top:9px;}
+.mav{font-size:10px;padding:2px 6px;border-radius:7px;}
+.ay{background:rgba(6,214,160,.15);color:var(--gn);}
+.an{background:rgba(239,71,111,.15);color:var(--rd);}
+/* menu order status */
+.mosgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;}
+.moscard{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:hidden;}
+.moshead{padding:10px 13px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:9px;}
+.mosimg{width:34px;height:34px;border-radius:6px;object-fit:cover;}
+.mosemo{font-size:26px;}
+.mosnm{font-size:13px;font-weight:500;}
+.mosct{font-size:10px;color:var(--tx3);}
+.mosrows{padding:9px 13px;}
+.mosrow{display:flex;align-items:center;gap:7px;padding:4px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.04);}
+.mosrow:last-child{border-bottom:none;}
+.mostm{font-family:'Space Mono',monospace;font-size:10px;color:var(--tx3);min-width:36px;}
+.mostbl{font-family:'Space Mono',monospace;font-size:11px;color:var(--ac);min-width:44px;}
+.mosqt{min-width:26px;font-family:'Space Mono',monospace;}
+.mosst{margin-left:auto;}
+/* stats */
+.scds{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.scd{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:16px;position:relative;overflow:hidden;}
+.scd::before{content:'';position:absolute;top:0;right:0;width:50px;height:50px;border-radius:0 10px 0 50px;opacity:.1;}
+.scd.or::before{background:var(--ac);}
+.scd.yw::before{background:var(--ac2);}
+.scd.gn::before{background:var(--gn);}
+.scd.bl::before{background:var(--bl);}
+.sic{font-size:19px;margin-bottom:6px;}
+.slb{font-size:11px;color:var(--tx2);margin-bottom:3px;}
+.svl{font-size:24px;font-weight:700;font-family:'Space Mono',monospace;}
+.scd.or .svl{color:var(--ac);}
+.scd.yw .svl{color:var(--ac2);}
+.scd.gn .svl{color:var(--gn);}
+.scd.bl .svl{color:var(--bl);}
+.ssb{font-size:10px;color:var(--tx3);margin-top:3px;}
+/* report */
+.rcds{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.rcd{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:16px;}
+.rct{font-size:12px;color:var(--tx2);margin-bottom:12px;}
+.brow{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+.blbl{font-size:11px;color:var(--tx2);width:72px;flex-shrink:0;}
+.btrk{flex:1;background:var(--sf2);border-radius:3px;height:6px;overflow:hidden;}
+.bfil{height:100%;border-radius:3px;background:var(--ac);transition:width .8s ease;}
+.bval{font-size:11px;font-family:'Space Mono',monospace;color:var(--tx2);text-align:right;}
+.hcht{display:flex;align-items:flex-end;gap:4px;height:85px;}
+.hbar{flex:1;background:var(--ac);border-radius:3px 3px 0 0;opacity:.8;position:relative;min-height:4px;cursor:pointer;}
+.hbar:hover{opacity:1;}
+.hbar::after{content:attr(data-l);position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--tx3);white-space:nowrap;font-family:'Space Mono',monospace;}
+/* date picker row */
+.datepick{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.datepick label{font-size:12px;color:var(--tx2);}
+.datepick select{background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-size:12px;font-family:'Space Mono',monospace;outline:none;cursor:pointer;}
+.datepick select:focus{border-color:var(--ac);}
+.datebadge{font-size:11px;padding:3px 9px;border-radius:5px;background:rgba(255,107,53,.15);color:var(--ac);border:1px solid rgba(255,107,53,.3);}
+/* visit history */
+.vtbl{width:100%;border-collapse:collapse;font-size:12px;}
+.vtbl th{text-align:left;padding:8px 11px;font-size:10px;letter-spacing:1px;color:var(--tx3);text-transform:uppercase;font-family:'Space Mono',monospace;border-bottom:1px solid var(--bd);}
+.vtbl td{padding:9px 11px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;}
+.vtbl tr:hover td{background:var(--sf2);}
+.vtbl tr:last-child td{border-bottom:none;}
+.vwrap{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:hidden;}
+/* delete controls */
+.delrow{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+/* item selector */
+.isel{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-height:185px;overflow-y:auto;margin-bottom:9px;}
+.ichip{padding:6px;background:var(--bg);border:1px solid var(--bd);border-radius:6px;cursor:pointer;text-align:center;font-size:11px;transition:all .15s;}
+.ichip:hover{border-color:var(--ac);}
+.ichip.sel{background:rgba(255,107,53,.15);border-color:var(--ac);color:var(--ac);}
+.ichip .cimg{width:24px;height:24px;object-fit:cover;border-radius:4px;display:block;margin:0 auto 3px;}
+.ichip .cem{font-size:19px;display:block;margin-bottom:3px;}
+.ichip .cpr{color:var(--tx3);font-size:10px;font-family:'Space Mono',monospace;}
+.sil{background:var(--bg);border-radius:6px;padding:9px;min-height:50px;}
+.sir{display:flex;align-items:center;justify-content:space-between;padding:3px 0;font-size:12px;}
+.qc{display:flex;align-items:center;gap:6px;}
+.qb{width:21px;height:21px;border-radius:50%;border:1px solid var(--bd);background:var(--sf);color:var(--tx);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .1s;}
+.qb:hover{border-color:var(--ac);color:var(--ac);}
+.qn{font-family:'Space Mono',monospace;font-size:12px;width:16px;text-align:center;}
+/* image upload */
+.iua{border:2px dashed var(--bd);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;}
+.iua:hover{border-color:var(--ac);background:rgba(255,107,53,.03);}
+.iuph{font-size:30px;margin-bottom:5px;}
+.iutxt{font-size:11px;color:var(--tx3);}
+.iuprev{width:60px;height:60px;object-fit:cover;border-radius:8px;margin:0 auto 6px;display:block;border:2px solid var(--ac);}
+.catrow{display:flex;gap:6px;}
+.catrow select{flex:1;}
+.catnew{display:none;flex:1;}
+.catnew.show{display:block;}
+/* toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--sf);border:1px solid var(--bd);border-left:4px solid var(--gn);border-radius:8px;padding:10px 15px;font-size:13px;z-index:300;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+.empty-st{text-align:center;padding:48px 16px;color:var(--tx3);}
+.empty-st .emo{font-size:42px;margin-bottom:9px;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">ORDER<span>MGR</span></div>
+  <div class="hright">
+    <button class="langbtn active" id="btnJA" onclick="setLang('ja')">JA</button>
+    <button class="langbtn" id="btnEN" onclick="setLang('en')">EN</button>
+    <div><div class="hclock" id="clock">--:--:--</div><div class="hdate" id="dateDisp"></div></div>
+  </div>
+</header>
+<div class="app">
+  <nav id="navEl">
+    <div class="nsec">
+      <div class="nlbl" data-t="main">メイン</div>
+      <button class="nb active" onclick="showPage('orders',this)"><span class="ic">📋</span><span class="nbtxt" data-t="nav_orders">注文管理</span><span class="nbg" id="pendingBadge" style="display:none">0</span></button>
+      <button class="nb" onclick="showPage('tables',this)"><span class="ic">🪑</span><span class="nbtxt" data-t="nav_tables">テーブル状況</span></button>
+      <button class="nb" onclick="showPage('mostat',this)"><span class="ic">📌</span><span class="nbtxt" data-t="nav_mostat">メニュー別状況</span></button>
+    </div>
+    <div class="ndiv"></div>
+    <div class="nsec">
+      <div class="nlbl" data-t="manage">管理</div>
+      <button class="nb" onclick="showPage('menu',this)"><span class="ic">🍽</span><span class="nbtxt" data-t="nav_menu">メニュー管理</span></button>
+      <button class="nb" onclick="showPage('visits',this)"><span class="ic">📁</span><span class="nbtxt" data-t="nav_visits">入店履歴</span></button>
+      <button class="nb" onclick="showPage('report',this)"><span class="ic">📊</span><span class="nbtxt" data-t="nav_report">売上レポート</span></button>
+    </div>
+  </nav>
+  <main>
+    <!-- ORDERS -->
+    <div class="page active" id="page-orders">
+      <div class="ph">
+        <div><div class="pt" data-t="nav_orders">注文管理</div><div class="ps" data-t="orders_sub">各テーブルの注文・アイテム別ステータス</div></div>
+        <button class="btn bp" onclick="openOrderModal()">＋ <span data-t="new_order">新規注文</span></button>
+      </div>
+      <div class="filters">
+        <button class="fb active" onclick="filterOrders('all',this)" data-t="all">すべて</button>
+        <button class="fb" onclick="filterOrders('pending',this)" data-t="pending">未処理</button>
+        <button class="fb" onclick="filterOrders('cooking',this)" data-t="cooking">調理中</button>
+        <button class="fb" onclick="filterOrders('done',this)" data-t="done">完了</button>
+        <div class="sbox" style="margin-left:auto"><input type="text" id="orderSearch" placeholder="テーブル番号で検索..." oninput="searchOrders(this.value)"></div>
+      </div>
+      <div class="ogrid" id="ordersGrid"></div>
+    </div>
+
+    <!-- TABLES -->
+    <div class="page" id="page-tables">
+      <div class="ph">
+        <div><div class="pt" data-t="nav_tables">テーブル状況</div><div class="ps" data-t="tables_sub">全20テーブルの着席・注文状況</div></div>
+        <button class="btn bp" onclick="openOrderModal()">＋ <span data-t="new_order">新規注文</span></button>
+      </div>
+      <div class="tgrid" id="tablesGrid"></div>
+    </div>
+
+    <!-- MENU ORDER STATUS -->
+    <div class="page" id="page-mostat">
+      <div class="ph">
+        <div><div class="pt" data-t="nav_mostat">メニュー別状況</div><div class="ps" data-t="mostat_sub">商品ごとのオーダー・調理状況（当日・時系列）</div></div>
+        <button class="btn bs" onclick="renderMoStat()">🔄 <span data-t="refresh">更新</span></button>
+      </div>
+      <div class="filters" id="mostatFilters">
+        <button class="fb active" onclick="filterMoStat('all',this)" data-t="all">すべて</button>
+        <button class="fb" onclick="filterMoStat('active',this)" data-t="active_only">進行中のみ</button>
+      </div>
+      <div class="mosgrid" id="moStatGrid"></div>
+    </div>
+
+    <!-- MENU -->
+    <div class="page" id="page-menu">
+      <div class="ph">
+        <div><div class="pt" data-t="nav_menu">メニュー管理</div><div class="ps" data-t="menu_sub">商品の追加・編集・当日売上数</div></div>
+        <button class="btn bp" onclick="openMenuModal()">＋ <span data-t="add_item">商品追加</span></button>
+      </div>
+      <div class="filters" id="menuFilters"></div>
+      <div class="mgrid" id="menuGrid"></div>
+    </div>
+
+    <!-- VISITS -->
+    <div class="page" id="page-visits">
+      <div class="ph">
+        <div><div class="pt" data-t="nav_visits">入店履歴</div><div class="ps" data-t="visits_sub">営業日ごとの会計済み記録</div></div>
+      </div>
+      <!-- date picker -->
+      <div class="datepick" id="visitDatePick"></div>
+      <!-- delete controls -->
+      <div class="delrow">
+        <button class="btn brd bsm" onclick="deleteVisitsByDate()" id="btnDelDate"><span data-t="del_date">この日を削除</span></button>
+        <button class="btn brd bsm" onclick="deleteAllVisits()"><span data-t="del_all">全削除</span></button>
+      </div>
+      <div class="vwrap"><table class="vtbl">
+        <thead><tr>
+          <th data-t="th_time">時刻</th>
+          <th data-t="th_table">テーブル</th>
+          <th data-t="th_people">人数</th>
+          <th data-t="th_items">注文内容</th>
+          <th data-t="th_total">合計</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="visitTbody"></tbody>
+      </table></div>
+    </div>
+
+    <!-- REPORT -->
+    <div class="page" id="page-report">
+      <div class="ph"><div><div class="pt" data-t="nav_report">売上レポート</div><div class="ps" data-t="report_sub">営業日別の集計データ</div></div></div>
+      <div class="datepick" id="reportDatePick"></div>
+      <div class="scds">
+        <div class="scd bl"><div class="sic">💴</div><div class="slb" data-t="total_sales">売上合計</div><div class="svl" id="r-total">0</div><div class="ssb" data-t="yen">円</div></div>
+        <div class="scd gn"><div class="sic">🧾</div><div class="slb" data-t="checkins">来店組数</div><div class="svl" id="r-orders">0</div><div class="ssb" data-t="groups">組</div></div>
+        <div class="scd yw"><div class="sic">📐</div><div class="slb" data-t="avg_spend">客単価</div><div class="svl" id="r-avg">0</div><div class="ssb" data-t="yen">円</div></div>
+        <div class="scd or"><div class="sic">🏆</div><div class="slb" data-t="top_item">人気No.1</div><div class="svl" id="r-top" style="font-size:15px">-</div><div class="ssb" data-t="most_ordered">最多注文</div></div>
+      </div>
+      <div class="rcds">
+        <div class="rcd"><div class="rct" data-t="sales_by_menu">メニュー別売上</div><div id="menuChart"></div></div>
+        <div class="rcd"><div class="rct" data-t="orders_by_hour">時間帯別来店数</div><div class="hcht" id="hourlyChart"></div><div style="margin-top:20px"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ORDER MODAL -->
+<div class="mo" id="orderModal">
+  <div class="modal">
+    <div class="mttl">📋 <span data-t="new_order">新規注文</span></div>
+    <div class="fr">
+      <div class="fg">
+        <label class="fl" data-t="table_no">テーブル番号</label>
+        <select class="fi" id="noTable" onchange="onTableChange(this)"><option value="">-</option></select>
+      </div>
+      <div class="fg">
+        <label class="fl" data-t="people">人数</label>
+        <select class="fi" id="noPeople"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option></select>
+      </div>
+    </div>
+    <div class="fg"><label class="fl" data-t="select_menu">メニュー選択</label><div class="isel" id="itemSelector"></div></div>
+    <div class="fg"><label class="fl" data-t="selected_items">選択中のアイテム</label><div class="sil" id="selItems"><div style="color:var(--tx3);font-size:12px;text-align:center;padding:8px" data-t="select_hint">アイテムを選択してください</div></div></div>
+    <div style="text-align:right;font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--ac2)"><span data-t="total">合計</span>: <span id="orderTotal">¥0</span></div>
+    <div class="mac">
+      <button class="btn bs" onclick="closeModal('orderModal')" data-t="cancel">キャンセル</button>
+      <button class="btn bp" onclick="submitOrder()" data-t="confirm">注文確定</button>
+    </div>
+  </div>
+</div>
+
+<!-- MENU MODAL -->
+<div class="mo" id="menuModal">
+  <div class="modal">
+    <div class="mttl" id="menuModalTitle">🍽 <span data-t="add_item">商品を追加</span></div>
+    <div class="fg">
+      <label class="fl" data-t="product_image">商品画像</label>
+      <div class="iua" onclick="document.getElementById('mImgFile').click()">
+        <input type="file" id="mImgFile" accept="image/*" style="display:none" onchange="previewImage(this)">
+        <div id="imgPreview"><div class="iuph">📷</div><div class="iutxt" data-t="click_image">クリックして画像を選択</div></div>
+      </div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">🇯🇵 <span data-t="product_name">商品名</span></label><input type="text" class="fi" id="mName" placeholder="例：唐揚げ"></div>
+      <div class="fg"><label class="fl">🇺🇸 English Name</label><input type="text" class="fi" id="mNameEn" placeholder="e.g. Fried Chicken"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl" data-t="price_yen">価格（円）</label><input type="number" class="fi" id="mPrice"></div>
+      <div class="fg"><label class="fl" data-t="status">販売状態</label><select class="fi" id="mAvail"><option value="1" data-t="on_sale">販売中</option><option value="0" data-t="suspended">停止中</option></select></div>
+    </div>
+    <div class="fr">
+      <div class="fg">
+        <label class="fl">🇯🇵 <span data-t="category">カテゴリ</span></label>
+        <div class="catrow">
+          <select class="fi" id="mCatSel" onchange="onCatChange(this)"><option value="">-</option></select>
+          <input type="text" class="fi catnew" id="mCatNew" placeholder="新しいカテゴリ名" data-t-ph="new_category">
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">🇺🇸 English Category</label>
+        <div class="catrow">
+          <select class="fi" id="mCatEnSel" onchange="onCatEnChange(this)"><option value="">-</option></select>
+          <input type="text" class="fi catnew" id="mCatEnNew" placeholder="e.g. Food">
+        </div>
+      </div>
+    </div>
+    <input type="hidden" id="editMenuId" value="">
+    <div class="mac">
+      <button class="btn bs" onclick="closeModal('menuModal')" data-t="cancel">キャンセル</button>
+      <button class="btn bp" onclick="submitMenu()" data-t="save">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- VISIT DETAIL MODAL -->
+<div class="mo" id="visitModal">
+  <div class="modal mw">
+    <div class="mttl">📁 <span data-t="visit_detail">入店詳細</span></div>
+    <div id="visitDetail"></div>
+    <div class="mac">
+      <button class="btn brd" onclick="editVisit(currentVisitId)">✏️ <span id="editVisitBtnTxt">修正・再会計</span></button>
+      <button class="btn bs" onclick="closeModal('visitModal')" data-t="close">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT VISIT MODAL (会計修正) -->
+<div class="mo" id="editVisitModal">
+  <div class="modal mw" style="max-height:90vh;display:flex;flex-direction:column;">
+    <div class="mttl" id="editVisitTitle">✏️ 会計修正・再会計</div>
+    <div id="editVisitInfo" style="font-size:13px;color:var(--tx2);margin-bottom:10px;flex-shrink:0"></div>
+    <!-- アイテム一覧（スクロール可） -->
+    <div id="editVisitItems" style="flex:1;overflow-y:auto;margin-bottom:8px;border:1px solid var(--bd);border-radius:8px;"></div>
+    <!-- メニューから追加 -->
+    <div id="editAddMenu" style="flex-shrink:0;margin-bottom:8px;">
+      <div id="editAddMenuToggle" style="cursor:pointer;font-size:12px;color:var(--ac);padding:6px 0;border-top:1px solid var(--bd);display:flex;align-items:center;gap:4px;" onclick="toggleEditAddMenu()">
+        <span id="editAddMenuArrow">▶</span> <span id="editAddMenuLabel">メニューから追加</span>
+      </div>
+      <div id="editAddMenuList" style="display:none;max-height:200px;overflow-y:auto;"></div>
+    </div>
+    <!-- 合計 -->
+    <div id="editVisitTotal" style="text-align:right;font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--ac2);margin-bottom:10px;flex-shrink:0;padding-top:6px;border-top:1px solid var(--bd)"></div>
+    <div class="mac" style="flex-shrink:0;">
+      <button class="btn bs" onclick="closeEditVisit()"><span id="editBackLabel">← 戻る</span></button>
+      <button class="btn bp" onclick="reCheckout()"><span id="editConfirmLabel">💳 再会計確定</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================
+// TRANSLATIONS
+// =====================================================
+const T = {
+  ja: {
+    main:'メイン', manage:'管理',
+    nav_orders:'注文管理', nav_tables:'テーブル状況', nav_mostat:'メニュー別状況',
+    nav_menu:'メニュー管理', nav_visits:'入店履歴', nav_report:'売上レポート',
+    orders_sub:'各テーブルの注文・アイテム別ステータス',
+    tables_sub:'全20テーブルの着席・注文状況',
+    mostat_sub:'商品ごとのオーダー・調理状況（当日・時系列）',
+    menu_sub:'商品の追加・編集・当日売上数',
+    visits_sub:'営業日ごとの会計済み記録',
+    report_sub:'営業日別の集計データ',
+    new_order:'新規注文', all:'すべて', pending:'未処理', cooking:'調理中', done:'完了',
+    active_only:'進行中のみ', refresh:'更新', add_item:'商品追加', save:'保存',
+    del_date:'この日を削除', del_all:'全削除', del_item:'削除',
+    total_sales:'売上合計', checkins:'来店組数', groups:'組',
+    avg_spend:'客単価', top_item:'人気No.1', most_ordered:'最多注文', yen:'円',
+    sales_by_menu:'メニュー別売上', orders_by_hour:'時間帯別来店数',
+    table_no:'テーブル番号', people:'人数', select_menu:'メニュー選択',
+    selected_items:'選択中のアイテム', select_hint:'アイテムを選択してください',
+    total:'合計', cancel:'キャンセル', confirm:'注文確定',
+    product_image:'商品画像', click_image:'クリックして画像を選択',
+    product_name:'商品名', price_yen:'価格（円）', status:'販売状態',
+    on_sale:'販売中', suspended:'停止中', category:'カテゴリ', new_category:'新しいカテゴリ名',
+    visit_detail:'入店詳細', close:'閉じる',
+    th_time:'時刻', th_table:'テーブル', th_people:'人数', th_items:'注文内容', th_total:'合計',
+    checkout_btn:'💳 会計済', table_total:'テーブル合計', done_total:'完了済',
+    empty_table:'空席', tap_add:'タップで注文追加', no_orders:'注文がありません',
+    no_visits:'入店履歴がありません', no_sales:'会計データがありません', no_history:'履歴なし',
+    start_cooking:'→ 調理開始', mark_cooked:'→ 調理完了', mark_done:'→ 完了', completed:'✓ 完了', cooked:'調理完了', cancel_item:'キャンセル',
+    today_sales:'本日売上', orders_count:'注文数', delete:'削除',
+    biz_date:'営業日', select_date:'日付を選択',
+    confirm_del_date:'この営業日のデータを削除しますか？',
+    confirm_del_all:'全ての入店履歴を削除しますか？',
+    confirm_del_item:'この記録を削除しますか？',
+    toast_checkout:'の会計が完了しました', toast_order_added:'の注文を受け付けました',
+    toast_item_updated:'を更新しました', toast_menu_saved:'を保存しました',
+    toast_deleted:'削除しました', toast_history_del:'履歴を削除しました',
+    people_suffix:'名', table_prefix:'テーブル',
+    edit:'編集', stop:'停止', resume:'再開',
+    no_active:'進行中の注文はありません',
+  },
+  en: {
+    main:'MAIN', manage:'MANAGE',
+    nav_orders:'Orders', nav_tables:'Tables', nav_mostat:'Menu Status',
+    nav_menu:'Menu Mgmt', nav_visits:'Visit Log', nav_report:'Sales Report',
+    orders_sub:'Per-table order & item status',
+    tables_sub:'All 20 tables — seating & orders',
+    mostat_sub:'Per-item order status (today, chronological)',
+    menu_sub:'Add / edit items · Today\'s sales count',
+    visits_sub:'Checked-out records by business date',
+    report_sub:'Sales analytics by business date',
+    new_order:'New Order', all:'All', pending:'Pending', cooking:'Cooking', done:'Done',
+    active_only:'Active Only', refresh:'Refresh', add_item:'Add Item', save:'Save',
+    del_date:'Delete This Date', del_all:'Delete All', del_item:'Delete',
+    total_sales:'Total Sales', checkins:'Parties', groups:'',
+    avg_spend:'Avg Spend', top_item:'Top Item', most_ordered:'Most Ordered', yen:'¥',
+    sales_by_menu:'Sales by Item', orders_by_hour:'Parties by Hour',
+    table_no:'Table', people:'Guests', select_menu:'Select Items',
+    selected_items:'Selected Items', select_hint:'Select items above',
+    total:'Total', cancel:'Cancel', confirm:'Confirm Order',
+    product_image:'Product Image', click_image:'Click to select image',
+    product_name:'Name', price_yen:'Price (¥)', status:'Status',
+    on_sale:'Available', suspended:'Suspended', category:'Category', new_category:'New category name',
+    visit_detail:'Visit Detail', close:'Close',
+    th_time:'Time', th_table:'Table', th_people:'Guests', th_items:'Items', th_total:'Total',
+    checkout_btn:'💳 Checkout', table_total:'Table Total', done_total:'Served',
+    empty_table:'Empty', tap_add:'Tap to add order', no_orders:'No orders',
+    no_visits:'No visit records', no_sales:'No checkout data', no_history:'No data',
+    start_cooking:'→ Start', mark_cooked:'→ Cooked', mark_done:'→ Done', completed:'✓ Done', cooked:'Cooked', cancel_item:'Cancel',
+    today_sales:'Today Sales', orders_count:'Orders', delete:'Delete',
+    biz_date:'Business Date', select_date:'Select date',
+    confirm_del_date:'Delete all records for this business date?',
+    confirm_del_all:'Delete ALL visit history?',
+    confirm_del_item:'Delete this record?',
+    toast_checkout:' checked out', toast_order_added:' order received',
+    toast_item_updated:' updated', toast_menu_saved:' saved',
+    toast_deleted:'Deleted', toast_history_del:'History deleted',
+    people_suffix:' guests', table_prefix:'Table ',
+    edit:'Edit', stop:'Stop', resume:'Resume',
+    no_active:'No active orders',
+  }
+};
+
+let lang = localStorage.getItem('omgr_lang') || 'ja';
+function t(key){ return T[lang][key] || T['ja'][key] || key; }
+
+function setLang(l){
+  lang = l;
+  localStorage.setItem('omgr_lang', l);
+  document.getElementById('btnJA').classList.toggle('active', l==='ja');
+  document.getElementById('btnEN').classList.toggle('active', l==='en');
+  applyTranslations();
+  renderCurrentPage();
+}
+
+function applyTranslations(){
+  document.querySelectorAll('[data-t]').forEach(el=>{
+    const key = el.getAttribute('data-t');
+    if(el.tagName==='INPUT' || el.tagName==='TEXTAREA') el.placeholder = t(key);
+    else el.textContent = t(key);
+  });
+  document.querySelectorAll('[data-t-ph]').forEach(el=>{
+    el.placeholder = t(el.getAttribute('data-t-ph'));
+  });
+  // dynamic placeholders
+  const os = document.getElementById('orderSearch');
+  if(os) os.placeholder = lang==='ja' ? 'テーブル番号で検索...' : 'Search by table...';
+}
+
+// =====================================================
+// BUSINESS DATE LOGIC
+// =====================================================
+// Business day: 19:30 ~ next day 03:30
+// Times 00:00-03:30 belong to PREVIOUS calendar day's biz date
+// Display: 00:00 → 24:00, 01:00 → 25:00, 02:00 → 26:00, 03:30 → 27:30
+
+function getBizDate(ts){
+  const d = new Date(ts);
+  const h = d.getHours(), m = d.getMinutes();
+  // 00:00 ~ 03:30 => previous calendar day is the biz date
+  if(h < 3 || (h===3 && m<=30)){
+    const prev = new Date(d);
+    prev.setDate(prev.getDate()-1);
+    return fmtDate(prev);
+  }
+  return fmtDate(d);
+}
+
+function fmtDate(d){
+  const y = d.getFullYear();
+  const mo = String(d.getMonth()+1).padStart(2,'0');
+  const dy = String(d.getDate()).padStart(2,'0');
+  return `${y}-${mo}-${dy}`;
+}
+
+function displayTime(ts){
+  const d = new Date(ts);
+  let h = d.getHours(), m = d.getMinutes();
+  // past midnight up to 03:30 → add 24
+  if(h < 3 || (h===3 && m<=30)) h += 24;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+function bizDateLabel(dateStr){
+  if(!dateStr) return '-';
+  const [y,mo,d] = dateStr.split('-');
+  return lang==='ja' ? `${y}年${parseInt(mo)}月${parseInt(d)}日` : `${y}/${mo}/${d}`;
+}
+
+function todayBizDate(){ return getBizDate(Date.now()); }
+
+// =====================================================
+// STATE
+// =====================================================
+const TABLES = 20;
+const _DEFAULT_MENU = [
+  {id:1,name:'和牛ハンバーグ',nameEn:'Wagyu Hamburger',price:1480,category:'フード',categoryEn:'Food',image:null,emoji:'🥩',available:true},
+  {id:2,name:'カルボナーラ',nameEn:'Carbonara',price:1280,category:'フード',categoryEn:'Food',image:null,emoji:'🍝',available:true},
+  {id:3,name:'シーザーサラダ',nameEn:'Caesar Salad',price:780,category:'フード',categoryEn:'Food',image:null,emoji:'🥗',available:true},
+  {id:4,name:'マルゲリータ',nameEn:'Margherita',price:1380,category:'フード',categoryEn:'Food',image:null,emoji:'🍕',available:true},
+  {id:5,name:'唐揚げ',nameEn:'Fried Chicken',price:680,category:'フード',categoryEn:'Food',image:null,emoji:'🍗',available:true},
+  {id:6,name:'生ビール',nameEn:'Draft Beer',price:550,category:'ドリンク',categoryEn:'Drink',image:null,emoji:'🍺',available:true},
+  {id:7,name:'赤ワイン',nameEn:'Red Wine',price:680,category:'ドリンク',categoryEn:'Drink',image:null,emoji:'🍷',available:true},
+  {id:8,name:'ウーロン茶',nameEn:'Oolong Tea',price:380,category:'ドリンク',categoryEn:'Drink',image:null,emoji:'🍵',available:true},
+  {id:9,name:'コーラ',nameEn:'Cola',price:350,category:'ドリンク',categoryEn:'Drink',image:null,emoji:'🥤',available:true},
+  {id:10,name:'バニラアイス',nameEn:'Vanilla Ice Cream',price:480,category:'デザート',categoryEn:'Dessert',image:null,emoji:'🍨',available:true},
+  {id:11,name:'チョコケーキ',nameEn:'Chocolate Cake',price:580,category:'デザート',categoryEn:'Dessert',image:null,emoji:'🎂',available:false},
+];
+// ── Persist to localStorage ──────────────────────────
+function saveMenuItems(){ try{localStorage.setItem('omgr_menu',JSON.stringify(menuItems));}catch(e){} }
+function saveOrders(){    try{localStorage.setItem('omgr_orders',JSON.stringify(orders));}catch(e){} }
+function saveVisits(){    try{localStorage.setItem('omgr_visits',JSON.stringify(visitHistory));}catch(e){} }
+
+// ── Load from storage, fall back to defaults on first run ──
+let menuItems   = JSON.parse(localStorage.getItem('omgr_menu')||'null')
+                  || JSON.parse(JSON.stringify(_DEFAULT_MENU));
+let orders      = JSON.parse(localStorage.getItem('omgr_orders')||'[]');
+let visitHistory= JSON.parse(localStorage.getItem('omgr_visits')||'[]');
+let categories  = [...new Set(menuItems.map(m=>m.category))];
+
+// ── Auto-clear any stale demo data left from previous versions ──
+// Demo orders had no 'savedVersion' marker; real orders will have it after first save.
+// We detect demo data by checking if omgr_orders was never written by a non-seed path.
+// Simplest fix: clear orders on load if the 'omgr_orders_v2' flag is not set,
+// which means the data predates the persistence update.
+if(!localStorage.getItem('omgr_orders_v2')){
+  orders = [];
+  localStorage.removeItem('omgr_orders');
+  localStorage.setItem('omgr_orders_v2','1');
+}
+
+let currentFilter='all', currentSearch='', selectedItems={}, newMenuImg=null;
+let menuFilter='all', mostatFilter='all';
+let reportDate = todayBizDate();
+let visitDate = todayBizDate();
+let currentPage = 'orders';
+
+function mName(m){ return lang==='en' && m.nameEn ? m.nameEn : m.name; }
+function mCat(m){ return lang==='en' && m.categoryEn ? m.categoryEn : m.category; }
+
+// (demo seed removed — orders persist via localStorage)
+
+// =====================================================
+// CLOCK
+// =====================================================
+function updateClock(){
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleTimeString('ja-JP');
+  document.getElementById('dateDisp').textContent = lang==='ja'
+    ? n.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'short'})
+    : n.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',weekday:'short'});
+}
+updateClock(); setInterval(updateClock,1000);
+
+// =====================================================
+// NAV
+// =====================================================
+let currentPageId = 'orders';
+function showPage(page, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(btn) btn.classList.add('active');
+  currentPageId = page;
+  if(page==='orders') renderOrders();
+  if(page==='tables') renderTables();
+  if(page==='mostat') renderMoStat();
+  if(page==='menu') renderMenu();
+  if(page==='visits'){ buildDatePicker('visitDatePick', visitDate, d=>{ visitDate=d; renderVisits(); }); renderVisits(); }
+  if(page==='report'){ buildDatePicker('reportDatePick', reportDate, d=>{ reportDate=d; renderReport(); }); renderReport(); }
+}
+
+function renderCurrentPage(){
+  applyTranslations();
+  if(currentPageId==='orders') renderOrders();
+  else if(currentPageId==='tables') renderTables();
+  else if(currentPageId==='mostat') renderMoStat();
+  else if(currentPageId==='menu') renderMenu();
+  else if(currentPageId==='visits'){ buildDatePicker('visitDatePick', visitDate, d=>{ visitDate=d; renderVisits(); }); renderVisits(); }
+  else if(currentPageId==='report'){ buildDatePicker('reportDatePick', reportDate, d=>{ reportDate=d; renderReport(); }); renderReport(); }
+}
+
+// =====================================================
+// DATE PICKER
+// =====================================================
+function allBizDates(){
+  const dates = new Set(visitHistory.map(v=>v.bizDate));
+  const today = todayBizDate();
+  dates.add(today);
+  return [...dates].sort((a,b)=>b.localeCompare(a));
+}
+
+function buildDatePicker(containerId, selected, onChange){
+  const dates = allBizDates();
+  const c = document.getElementById(containerId);
+  const label = lang==='ja' ? '営業日：' : 'Business date:';
+  let opts = dates.map(d=>`<option value="${d}" ${d===selected?'selected':''}>${bizDateLabel(d)}${d===todayBizDate()?(lang==='ja'?' (本日)':' (Today)'):''}</option>`).join('');
+  c.innerHTML=`<label>${label}</label>
+    <select onchange="(function(v){${onChange.toString().replace(/d=>/,'var d=v;').replace(/{/,'{').replace(/}/,'}')}})(this.value)"
+      >${opts}</select>
+    <span class="datebadge">${bizDateLabel(selected)}</span>`;
+  // simpler approach:
+  c.innerHTML=`<label>${label}</label>
+    <select id="${containerId}_sel">${opts}</select>
+    <span class="datebadge" id="${containerId}_badge">${bizDateLabel(selected)}</span>`;
+  document.getElementById(containerId+'_sel').onchange = function(){
+    document.getElementById(containerId+'_badge').textContent = bizDateLabel(this.value);
+    onChange(this.value);
+  };
+}
+
+// =====================================================
+// HELPERS
+// =====================================================
+function icon(item, sz=20){
+  if(item.image) return `<img style="width:${sz}px;height:${sz}px;object-fit:cover;border-radius:4px;flex-shrink:0" src="${item.image}">`;
+  return `<span style="font-size:${sz}px;flex-shrink:0;line-height:1">${item.emoji}</span>`;
+}
+function updateBadge(){
+  const n=orders.filter(o=>o.status==='pending').length;
+  const b=document.getElementById('pendingBadge');
+  b.textContent=n; b.style.display=n?'':'none';
+}
+function syncOrderStatus(o){
+  const ss=o.items.map(i=>i.itemStatus);
+  const active=ss.filter(s=>s!=='cancelled');
+  if(!active.length||active.every(s=>s==='done')) o.status='done';
+  else if(active.every(s=>s==='done'||s==='cooked')) o.status='cooked';
+  else if(active.some(s=>s==='cooking'||s==='cooked'||s==='done')) o.status='cooking';
+  else o.status='pending';
+}
+
+// =====================================================
+// ORDERS
+// =====================================================
+const SC={pending:'spp',cooking:'sck',done:'sdn'};
+function itemName(it){ return lang==='en' && it.nameEn ? it.nameEn : it.name; }
+
+function renderOrders(){
+  updateBadge();
+  let list=orders.filter(o=>{
+    const mf=currentFilter==='all'||(currentFilter==='cooking'&&(o.status==='cooking'||o.status==='cooked'))||o.status===currentFilter;
+    const ms=!currentSearch||String(o.table).includes(currentSearch);
+    return mf&&ms;
+  });
+  const g=document.getElementById('ordersGrid');
+  if(!list.length){g.innerHTML=`<div class="empty-st"><div class="emo">📭</div><div>${t('no_orders')}</div></div>`;return;}
+  g.innerHTML=list.map(o=>`
+    <div class="ocard">
+      <div class="och">
+        <div><div class="otbl">${t('table_prefix')}${o.table}</div><div class="otm">${o.time} · ${o.people}${t('people_suffix')}</div></div>
+        <span class="sb ${SC[o.status]}">${t(o.status)}</span>
+      </div>
+      <div class="oitems">${o.items.map(it=>itemRowHTML(o.id,it)).join('')}</div>
+      <div class="ocf">
+        <span class="otot">¥${o.total.toLocaleString()}</span>
+        <button class="btn bgh" onclick="deleteOrder(${o.id})">${t('delete')}</button>
+      </div>
+    </div>`).join('');
+}
+
+function itemRowHTML(oid,it){
+  let btn='';
+  const cancelBtn=`<button class="isb isb-x" onclick="cancelItem(${oid},${it.id})" title="キャンセル">✕</button>`;
+  if(it.itemStatus==='cancelled') return`<div class="oirow" style="opacity:.4;text-decoration:line-through">${icon(it,20)}<span class="oinm">${itemName(it)}</span><span class="oiqt">×${it.qty}</span><span class="oipr">¥${(it.price*it.qty).toLocaleString()}</span><span class="isb isb-x" style="cursor:default">✕</span></div>`;
+  if(it.itemStatus==='pending') btn=`<button class="isb isb-p" onclick="advItem(${oid},${it.id})">${t('start_cooking')}</button>${cancelBtn}`;
+  else if(it.itemStatus==='cooking') btn=`<button class="isb isb-c" onclick="advItem(${oid},${it.id})">${t('mark_cooked')}</button>${cancelBtn}`;
+  else if(it.itemStatus==='cooked') btn=`<button class="isb isb-k" onclick="advItem(${oid},${it.id})">${t('mark_done')}</button>${cancelBtn}`;
+  else btn=`<span class="isb isb-d">${t('completed')}</span>${cancelBtn}`;
+  return`<div class="oirow">${icon(it,20)}<span class="oinm">${itemName(it)}</span><span class="oiqt">×${it.qty}</span><span class="oipr">¥${(it.price*it.qty).toLocaleString()}</span>${btn}</div>`;
+}
+
+function advItem(oid,iid){
+  const o=orders.find(x=>x.id===oid); if(!o)return;
+  const it=o.items.find(x=>x.id===iid); if(!it)return;
+  if(it.itemStatus==='pending') it.itemStatus='cooking';
+  else if(it.itemStatus==='cooking') it.itemStatus='cooked';
+  else if(it.itemStatus==='cooked') it.itemStatus='done';
+  syncOrderStatus(o);
+  saveOrders();
+  renderOrders();
+  if(currentPageId==='tables') renderTables();
+  showToast(itemName(it)+t('toast_item_updated'));
+}
+
+function cancelItem(oid,iid){
+  const o=orders.find(x=>x.id===oid); if(!o)return;
+  const it=o.items.find(x=>x.id===iid); if(!it)return;
+  if(it.itemStatus==='cancelled'){
+    it.itemStatus='pending'; // キャンセル解除
+  } else {
+    it.itemStatus='cancelled';
+  }
+  // キャンセル済みを除いた合計再計算
+  o.total=o.items.filter(x=>x.itemStatus!=='cancelled').reduce((s,x)=>s+x.price*x.qty,0);
+  syncOrderStatus(o);
+  saveOrders();
+  renderOrders();
+  if(currentPageId==='tables') renderTables();
+  showToast(itemName(it)+t('toast_item_updated'));
+}
+
+function filterOrders(s,btn){
+  currentFilter=s;
+  document.querySelectorAll('#page-orders .fb').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); renderOrders();
+}
+function searchOrders(v){ currentSearch=v.trim(); renderOrders(); }
+function deleteOrder(id){ orders=orders.filter(x=>x.id!==id); saveOrders(); renderOrders(); showToast(t('toast_deleted')); }
+
+// =====================================================
+// ORDER MODAL
+// =====================================================
+function openOrderModal(preTable=null){
+  selectedItems={};
+  const sel=document.getElementById('noTable');
+  sel.innerHTML=`<option value="">-</option>`;
+  for(let i=1;i<=TABLES;i++) sel.innerHTML+=`<option value="${i}">${t('table_prefix')}${i}</option>`;
+  if(preTable){ sel.value=preTable; autoFillPeople(preTable); }
+  else document.getElementById('noPeople').value='1';
+  renderItemSel(); renderSelItems();
+  document.getElementById('orderModal').classList.add('open');
+  applyTranslations();
+}
+function onTableChange(s){ const v=parseInt(s.value); if(v) autoFillPeople(v); }
+function autoFillPeople(t_){
+  const latest=orders.filter(o=>o.table===t_).sort((a,b)=>b.timestamp-a.timestamp)[0];
+  if(latest) document.getElementById('noPeople').value=Math.min(latest.people,8);
+}
+function renderItemSel(){
+  const av=menuItems.filter(m=>m.available);
+  document.getElementById('itemSelector').innerHTML=av.map(m=>`
+    <div class="ichip ${selectedItems[m.id]?'sel':''}" onclick="toggleItem(${m.id})">
+      ${m.image?`<img class="cimg" src="${m.image}">`:`<span class="cem">${m.emoji}</span>`}
+      ${mName(m)}<span class="cpr">¥${m.price.toLocaleString()}</span>
+    </div>`).join('');
+}
+function toggleItem(id){
+  const m=menuItems.find(x=>x.id===id);
+  if(selectedItems[id]) delete selectedItems[id];
+  else selectedItems[id]={...m,qty:1};
+  renderItemSel(); renderSelItems();
+}
+function changeQty(id,d){
+  if(!selectedItems[id])return;
+  selectedItems[id].qty+=d;
+  if(selectedItems[id].qty<=0) delete selectedItems[id];
+  renderItemSel(); renderSelItems();
+}
+function renderSelItems(){
+  const entries=Object.values(selectedItems);
+  const total=entries.reduce((s,x)=>s+x.price*x.qty,0);
+  document.getElementById('orderTotal').textContent='¥'+total.toLocaleString();
+  const box=document.getElementById('selItems');
+  if(!entries.length){ box.innerHTML=`<div style="color:var(--tx3);font-size:12px;text-align:center;padding:8px">${t('select_hint')}</div>`; return; }
+  box.innerHTML=entries.map(e=>`
+    <div class="sir">
+      <span style="display:flex;align-items:center;gap:5px">${icon(e,18)} ${mName(e)}</span>
+      <div style="display:flex;align-items:center;gap:9px">
+        <div class="qc">
+          <button class="qb" onclick="changeQty(${e.id},-1)">−</button>
+          <span class="qn">${e.qty}</span>
+          <button class="qb" onclick="changeQty(${e.id},1)">＋</button>
+        </div>
+        <span style="font-family:'Space Mono',monospace;font-size:11px;width:60px;text-align:right">¥${(e.price*e.qty).toLocaleString()}</span>
+      </div>
+    </div>`).join('');
+}
+function submitOrder(){
+  const tableVal=document.getElementById('noTable').value;
+  const people=parseInt(document.getElementById('noPeople').value);
+  const entries=Object.values(selectedItems);
+  if(!tableVal){showToast(t('table_no')+'?',true);return;}
+  if(!entries.length){showToast(t('select_hint'),true);return;}
+  const now=Date.now();
+  const items=entries.map((e,j)=>({id:now+j+1,menuId:e.id,name:e.name,nameEn:e.nameEn||e.name,price:e.price,emoji:e.emoji,image:e.image||null,qty:e.qty,itemStatus:'pending'}));
+  const total=items.reduce((s,x)=>s+x.price*x.qty,0);
+  orders.unshift({id:now,table:parseInt(tableVal),people,items,status:'pending',
+    time:displayTime(now),timestamp:now,total});
+  saveOrders();
+  closeModal('orderModal'); renderOrders();
+  showToast(t('table_prefix')+tableVal+t('toast_order_added'));
+}
+
+// =====================================================
+// TABLES
+// =====================================================
+function renderTables(){
+  let html='';
+  for(let t_=1;t_<=TABLES;t_++){
+    const tOrd=orders.filter(o=>o.table===t_).sort((a,b)=>a.timestamp-b.timestamp);
+    const isOcc=tOrd.length>0;
+    const people=isOcc?tOrd[tOrd.length-1].people:0;
+    const totalAll=tOrd.reduce((s,o)=>s+o.total,0);
+    const totalDone=tOrd.filter(o=>o.status==='done').reduce((s,o)=>s+o.total,0);
+    let ordHtml='';
+    if(isOcc){
+      ordHtml=tOrd.map(o=>`
+        <div class="tor">
+          <div class="tortm">${o.time}</div>
+          <div class="torcont">
+            ${o.items.map(it=>`
+              <div class="torline">${icon(it,16)}<span>${itemName(it)} ×${it.qty}</span>${tableItemBtn(o.id,it)}</div>`).join('')}
+            <div class="torsub">¥${o.total.toLocaleString()}</div>
+          </div>
+        </div>`).join('');
+    }
+    html+=`
+      <div class="tcard ${isOcc?'occ':''}">
+        <div class="tchead" onclick="openOrderModal(${t_})">
+          <div><div class="tnum">TABLE ${String(t_).padStart(2,'0')}</div>
+          <div class="tppl">${isOcc?people+t('people_suffix'):t('empty_table')}</div></div>
+          <div class="tdot ${isOcc?'docc':'demp'}"></div>
+        </div>
+        ${isOcc
+          ?`<div class="tords">${ordHtml}</div>
+            <div class="tcfoot">
+              <div class="tcfl">
+                <div class="tftl">${t('table_total')}</div>
+                ${totalDone>0?`<div class="tfdone">${t('done_total')} ¥${totalDone.toLocaleString()}</div>`:''}
+              </div>
+              <div class="tcfr">
+                <div class="tftot">¥${totalAll.toLocaleString()}</div>
+                <button class="btn bg" onclick="checkout(${t_},event)">${t('checkout_btn')}</button>
+              </div>
+            </div>`
+          :`<div class="tempty" onclick="openOrderModal(${t_})">💺 ${t('empty_table')}<br><small>${t('tap_add')}</small></div>`}
+      </div>`;
+  }
+  document.getElementById('tablesGrid').innerHTML=html;
+}
+
+function tableItemBtn(oid,it){
+  const cx=`<button class="tib tib-x" onclick="cancelItemTable(${oid},${it.id},event)" title="キャンセル">✕</button>`;
+  if(it.itemStatus==='cancelled') return`<span class="tib tib-x" style="cursor:default;opacity:.5">✕</span>`;
+  if(it.itemStatus==='pending') return`<button class="tib tib-p" onclick="advItemTable(${oid},${it.id},event)">${t('start_cooking')}</button>${cx}`;
+  if(it.itemStatus==='cooking') return`<button class="tib tib-c" onclick="advItemTable(${oid},${it.id},event)">${t('mark_cooked')}</button>${cx}`;
+  if(it.itemStatus==='cooked') return`<button class="tib tib-k" onclick="advItemTable(${oid},${it.id},event)">${t('mark_done')}</button>${cx}`;
+  return`<span class="tib tib-d">${t('completed')}</span>${cx}`;
+}
+function advItemTable(oid,iid,e){
+  e.stopPropagation();
+  const o=orders.find(x=>x.id===oid); if(!o)return;
+  const it=o.items.find(x=>x.id===iid); if(!it)return;
+  if(it.itemStatus==='pending') it.itemStatus='cooking';
+  else if(it.itemStatus==='cooking') it.itemStatus='cooked';
+  else if(it.itemStatus==='cooked') it.itemStatus='done';
+  syncOrderStatus(o);
+  saveOrders();
+  renderTables();
+  if(currentPageId==='orders') renderOrders();
+  showToast(itemName(it)+t('toast_item_updated'));
+}
+
+function cancelItemTable(oid,iid,e){
+  e.stopPropagation();
+  const o=orders.find(x=>x.id===oid); if(!o)return;
+  const it=o.items.find(x=>x.id===iid); if(!it)return;
+  if(it.itemStatus==='cancelled'){
+    it.itemStatus='pending';
+  } else {
+    it.itemStatus='cancelled';
+  }
+  o.total=o.items.filter(x=>x.itemStatus!=='cancelled').reduce((s,x)=>s+x.price*x.qty,0);
+  syncOrderStatus(o);
+  saveOrders();
+  renderTables();
+  if(currentPageId==='orders') renderOrders();
+  showToast(itemName(it)+t('toast_item_updated'));
+}
+
+function checkout(tbl,e){
+  e.stopPropagation();
+  const tOrd=orders.filter(o=>o.table===tbl);
+  if(!tOrd.length) return;
+  const now=Date.now();
+  const bizD=getBizDate(now);
+  const visit={
+    id:now, bizDate:bizD,
+    datetime:new Date(now).toLocaleString('ja-JP'),
+    checkinTime:tOrd[0].time,
+    checkoutTime:displayTime(now),
+    checkoutTs:now,
+    table:tbl,
+    people:tOrd[tOrd.length-1].people,
+    orders:tOrd.map(o=>({
+      time:o.time,
+      items:o.items.filter(it=>it.itemStatus!=='cancelled').map(it=>({name:it.name,nameEn:it.nameEn||it.name,emoji:it.emoji,image:it.image,qty:it.qty,price:it.price})),
+      subtotal:o.items.filter(it=>it.itemStatus!=='cancelled').reduce((s,it)=>s+it.price*it.qty,0)
+    })).filter(o=>o.items.length>0),
+    total:tOrd.reduce((s,o)=>s+o.items.filter(it=>it.itemStatus!=='cancelled').reduce((ss,it)=>ss+it.price*it.qty,0),0)
+  };
+  visitHistory.unshift(visit);
+  saveVisits();
+  orders=orders.filter(o=>o.table!==tbl);
+  saveOrders();
+  renderTables();
+  showToast(t('table_prefix')+tbl+t('toast_checkout'));
+  if(currentPageId==='visits') renderVisits();
+  if(currentPageId==='report') renderReport();
+}
+
+// =====================================================
+// MENU ORDER STATUS
+// =====================================================
+let mostatFilter_='all';
+function renderMoStat(){
+  const today=todayBizDate();
+  // collect today's visit data
+  const todayVisits=visitHistory.filter(v=>v.bizDate===today);
+  const grid=document.getElementById('moStatGrid');
+  let html='';
+  menuItems.forEach(m=>{
+    const lines=[];
+    // from active orders
+    orders.forEach(o=>{
+      o.items.filter(it=>it.menuId===m.id).forEach(it=>{
+        if(mostatFilter_==='active'&&(it.itemStatus==='done'||it.itemStatus==='cancelled'))return;
+        lines.push({time:o.time,ts:o.timestamp,table:o.table,qty:it.qty,status:it.itemStatus,source:'active'});
+      });
+    });
+    // from today's checkouts
+    todayVisits.forEach(v=>{
+      v.orders.forEach(ord=>{
+        ord.items.filter(it=>it.name===m.name||(it.nameEn&&it.nameEn===m.nameEn)).forEach(it=>{
+          if(mostatFilter_==='active')return; // completed, skip in active-only
+          lines.push({time:v.checkoutTime,ts:v.checkoutTs,table:v.table,qty:it.qty,status:'done',source:'history'});
+        });
+      });
+    });
+    if(mostatFilter_==='active'&&!lines.length)return;
+    lines.sort((a,b)=>a.ts-b.ts);
+    const stColor={pending:'var(--ac)',cooking:'var(--ac2)',cooked:'var(--bl)',done:'var(--gn)',cancelled:'var(--tx3)'};
+    const stLabel={pending:t('pending'),cooking:t('cooking'),cooked:t('cooked'),done:t('done'),cancelled:lang==='ja'?'キャンセル':'Cancelled'};
+    // today's total sold (from checkouts)
+    const todaySold=todayVisits.reduce((s,v)=>s+v.orders.reduce((ss,ord)=>ss+ord.items.filter(it=>it.name===m.name).reduce((sss,it)=>sss+it.qty,0),0),0);
+    html+=`
+      <div class="moscard">
+        <div class="moshead">
+          ${m.image?`<img class="mosimg" src="${m.image}">`:`<span class="mosemo">${m.emoji}</span>`}
+          <div><div class="mosnm">${mName(m)}</div><div class="mosct">${mCat(m)} · ¥${m.price.toLocaleString()} · ${lang==='ja'?`本日提供: ${todaySold}件`:`Served today: ${todaySold}`}</div></div>
+        </div>
+        <div class="mosrows">
+          ${lines.length?lines.map(l=>`
+            <div class="mosrow">
+              <div class="mostm">${l.time}</div>
+              <div class="mostbl">T-${String(l.table).padStart(2,'0')}</div>
+              <div class="mosqt">×${l.qty}</div>
+              <div class="mosst"><span style="color:${stColor[l.status]};font-size:10px">● ${stLabel[l.status]}</span></div>
+            </div>`).join('')
+          :`<div style="padding:10px;text-align:center;color:var(--tx3);font-size:11px">${lang==='ja'?'注文なし':'No orders'}</div>`}
+        </div>
+      </div>`;
+  });
+  grid.innerHTML=html||`<div class="empty-st"><div class="emo">📭</div><div>${t('no_active')}</div></div>`;
+}
+function filterMoStat(f,btn){
+  mostatFilter_=f;
+  document.querySelectorAll('#mostatFilters .fb').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); renderMoStat();
+}
+
+// =====================================================
+// MENU PAGE
+// =====================================================
+function todaySoldCount(menuId){
+  const today=todayBizDate();
+  return visitHistory.filter(v=>v.bizDate===today)
+    .reduce((s,v)=>s+v.orders.reduce((ss,o)=>ss+o.items.filter(it=>it.name===(menuItems.find(m=>m.id===menuId)||{}).name).reduce((sss,it)=>sss+it.qty,0),0),0);
+}
+
+function renderMenu(){
+  const cats=[...new Set(menuItems.map(m=>m.category))];
+  document.getElementById('menuFilters').innerHTML=
+    `<button class="fb ${menuFilter==='all'?'active':''}" onclick="filterMenu('all',this)">${t('all')}</button>`
+    +cats.map(c=>`<button class="fb ${menuFilter===c?'active':''}" onclick="filterMenu('${c}',this)">${lang==='en'?(menuItems.find(m=>m.category===c)?.categoryEn||c):c}</button>`).join('');
+  const list=menuFilter==='all'?menuItems:menuItems.filter(m=>m.category===menuFilter);
+  document.getElementById('menuGrid').innerHTML=list.map(m=>{
+    const sold=todaySoldCount(m.id);
+    const active=orders.reduce((s,o)=>s+o.items.filter(it=>it.menuId===m.id&&it.itemStatus!=='done').reduce((ss,it)=>ss+it.qty,0),0);
+    return`<div class="mcard">
+      <div class="mimgw">${m.image?`<img src="${m.image}">`:`<span class="memo">${m.emoji}</span>`}</div>
+      <div class="mnm">${mName(m)}</div>
+      <div class="mct">${mCat(m)}</div>
+      <div class="mpr">¥${m.price.toLocaleString()}</div>
+      <div class="msales">${lang==='ja'?`本日: <span>${sold}</span>件提供 / 調理中: <span style="color:var(--ac2)">${active}</span>件`:`Today: <span>${sold}</span> served / Cooking: <span style="color:var(--ac2)">${active}</span>`}</div>
+      <div class="mft">
+        <span class="mav ${m.available?'ay':'an'}">${m.available?t('on_sale'):t('suspended')}</span>
+        <div style="display:flex;gap:4px">
+          <div class="mbtns">
+            <button class="btn bgh bsm" onclick="openMenuModal(${m.id})">${t('edit')}</button>
+            <button class="btn bgh bsm" onclick="toggleAvail(${m.id})">${m.available?t('stop'):t('resume')}</button>
+            <button class="btn brd bsm" onclick="deleteMenu(${m.id})">${t('delete')}</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function filterMenu(c,btn){
+  menuFilter=c;
+  document.querySelectorAll('#menuFilters .fb').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); renderMenu();
+}
+function toggleAvail(id){
+  const m=menuItems.find(x=>x.id===id);
+  if(m){m.available=!m.available;saveMenuItems();renderMenu();showToast(mName(m)+t('toast_item_updated'));}
+}
+function deleteMenu(id){menuItems=menuItems.filter(x=>x.id!==id);saveMenuItems();renderMenu();showToast(t('toast_deleted'));}
+
+function buildCatDropdown(sel,current){
+  const all=[...new Set([...categories,...menuItems.map(m=>m.category)])];
+  sel.innerHTML='<option value="">-</option>'+all.map(c=>`<option value="${c}" ${c===current?'selected':''}>${c}</option>`).join('')+'<option value="__new__">＋ '+(lang==='ja'?'新規作成':'New')+'...</option>';
+}
+function openMenuModal(id=null){
+  newMenuImg=null;
+  document.getElementById('editMenuId').value=id||'';
+  document.getElementById('mCatNew').value='';
+  document.getElementById('mCatNew').classList.remove('show');
+  document.getElementById('mCatEnNew').value='';
+  document.getElementById('mCatEnNew').classList.remove('show');
+  buildCatDropdown(document.getElementById('mCatSel'),'');
+  buildCatEnDropdown(document.getElementById('mCatEnSel'),'');
+  if(id){
+    const m=menuItems.find(x=>x.id===id); if(!m)return;
+    document.getElementById('mName').value=m.name;
+    document.getElementById('mNameEn').value=m.nameEn||'';
+    document.getElementById('mPrice').value=m.price;
+    document.getElementById('mAvail').value=m.available?'1':'0';
+    buildCatDropdown(document.getElementById('mCatSel'),m.category);
+    buildCatEnDropdown(document.getElementById('mCatEnSel'),m.categoryEn||'');
+    newMenuImg=m.image||null;
+    document.getElementById('imgPreview').innerHTML=m.image
+      ?`<img class="iuprev" src="${m.image}"><div class="iutxt" style="font-size:10px">${lang==='ja'?'変更するにはクリック':'Click to change'}</div>`
+      :`<div class="iuph">${m.emoji}</div><div class="iutxt">${t('click_image')}</div>`;
+  } else {
+    document.getElementById('mName').value='';
+    document.getElementById('mNameEn').value='';
+    document.getElementById('mPrice').value='';
+    document.getElementById('mAvail').value='1';
+    document.getElementById('mImgFile').value='';
+    document.getElementById('imgPreview').innerHTML=`<div class="iuph">📷</div><div class="iutxt">${t('click_image')}</div>`;
+  }
+  document.getElementById('menuModal').classList.add('open');
+  applyTranslations();
+}
+function previewImage(input){
+  const f=input.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    newMenuImg=e.target.result;
+    document.getElementById('imgPreview').innerHTML=`<img class="iuprev" src="${newMenuImg}"><div class="iutxt" style="font-size:10px">${f.name}</div>`;
+  };
+  r.readAsDataURL(f);
+}
+function onCatChange(sel){
+  const ni=document.getElementById('mCatNew');
+  if(sel.value==='__new__'){ni.classList.add('show');ni.focus();}
+  else{ni.classList.remove('show');ni.value='';}
+}
+function onCatEnChange(sel){
+  const ni=document.getElementById('mCatEnNew');
+  if(sel.value==='__new__'){ni.classList.add('show');ni.focus();}
+  else{ni.classList.remove('show');ni.value='';}
+}
+function buildCatEnDropdown(sel, current){
+  const all=[...new Set(menuItems.map(m=>m.categoryEn||m.category).filter(Boolean))];
+  sel.innerHTML='<option value="">-</option>'+all.map(c_=>`<option value="${c_}" ${c_===current?'selected':''}>${c_}</option>`).join('')+'<option value="__new__">＋ New...</option>';
+}
+function submitMenu(){
+  const name   = document.getElementById('mName').value.trim();
+  const nameEn = document.getElementById('mNameEn').value.trim() || name;
+  const price  = parseInt(document.getElementById('mPrice').value);
+  const avail  = document.getElementById('mAvail').value==='1';
+  const catSel = document.getElementById('mCatSel').value;
+  const catNew = document.getElementById('mCatNew').value.trim();
+  const cat    = catSel==='__new__' ? catNew : catSel;
+  const catEnSel = document.getElementById('mCatEnSel').value;
+  const catEnNew = document.getElementById('mCatEnNew').value.trim();
+  const catEn  = catEnSel==='__new__' ? catEnNew : (catEnSel || cat);
+  if(!name||isNaN(price)||!cat){showToast(lang==='ja'?'すべての項目を入力してください':'Fill in all fields',true);return;}
+  if(!categories.includes(cat)) categories.push(cat);
+  const eid = document.getElementById('editMenuId').value;
+  if(eid){
+    const m=menuItems.find(x=>x.id===parseInt(eid));
+    if(m){ m.name=name; m.nameEn=nameEn; m.price=price; m.available=avail;
+           m.category=cat; m.categoryEn=catEn;
+           if(newMenuImg!==null) m.image=newMenuImg; }
+  } else {
+    menuItems.push({id:Date.now(),name,nameEn,price,category:cat,categoryEn:catEn,
+                    image:newMenuImg,emoji:'🍽',available:avail});
+  }
+  saveMenuItems();
+  closeModal('menuModal'); renderMenu();
+  showToast(`「${name} / ${nameEn}」`+t('toast_menu_saved'));
+}
+
+// =====================================================
+// VISITS
+// =====================================================
+function renderVisits(){
+  const filtered=visitHistory.filter(v=>v.bizDate===visitDate);
+  const tbody=document.getElementById('visitTbody');
+  if(!filtered.length){
+    tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--tx3)">${t('no_visits')}</td></tr>`;return;
+  }
+  tbody.innerHTML=filtered.map(v=>`
+    <tr style="cursor:pointer" onclick="showVisitDetail(${v.id})">
+      <td><span style="font-family:'Space Mono',monospace;font-size:11px">${v.checkinTime}〜${v.checkoutTime}</span></td>
+      <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--ac)">T-${String(v.table).padStart(2,'0')}</span></td>
+      <td>${v.people}${t('people_suffix')}</td>
+      <td style="color:var(--tx2);font-size:11px">${v.orders.map(o=>o.items.map(i=>`${i.cancelled?'<s style="opacity:.4">':''} ${i.emoji}${lang==='en'&&i.nameEn?i.nameEn:i.name}×${i.qty}${i.cancelled?'</s>':''}`).join('・')).join(' / ')}</td>
+      <td><span style="font-family:'Space Mono',monospace;font-weight:700;color:var(--ac2)">¥${v.total.toLocaleString()}</span></td>
+      <td><button class="btn brd bsm" onclick="deleteVisit(${v.id},event)">${t('del_item')}</button></td>
+    </tr>`).join('');
+}
+
+// =====================================================
+// EDIT VISIT (会計修正・再会計)
+// =====================================================
+let _editVid = null;          // 編集中の visit id
+let _editItems = [];          // 編集用アイテム配列 [{oi,ii,name,nameEn,emoji,price,qty,cancelled}, ...]
+let _editMenuOpen = false;
+
+function editVisit(id){
+  const v = visitHistory.find(x=>x.id===id); if(!v) return;
+  _editVid = id;
+  _editItems = [];
+  v.orders.forEach((o,oi)=>{
+    o.items.forEach((it,ii)=>{
+      _editItems.push({
+        oi, ii,
+        name:   it.name,
+        nameEn: it.nameEn||it.name,
+        emoji:  it.emoji||'🍽',
+        price:  it.price,
+        qty:    it.qty,
+        cancelled: !!(it.cancelled)
+      });
+    });
+  });
+
+  // タイトル・情報
+  const title = document.getElementById('editVisitTitle');
+  if(title) title.textContent = '✏️ '+(lang==='ja'?'会計修正・再会計':'Edit & Re-checkout');
+  const info = document.getElementById('editVisitInfo');
+  if(info) info.textContent = lang==='ja'
+    ? `テーブル ${v.table}・${v.people}名・${v.checkinTime}〜${v.checkoutTime}`
+    : `Table ${v.table} · ${v.people}${t('people_suffix')} · ${v.checkinTime}–${v.checkoutTime}`;
+
+  // ボタンラベル
+  const backLbl = document.getElementById('editBackLabel');
+  if(backLbl) backLbl.textContent = lang==='ja'?'← 戻る':'← Back';
+  const confLbl = document.getElementById('editConfirmLabel');
+  if(confLbl) confLbl.textContent = lang==='ja'?'💳 再会計確定':'💳 Confirm';
+  const addLbl = document.getElementById('editAddMenuLabel');
+  if(addLbl) addLbl.textContent = lang==='ja'?'メニューから追加':'Add from menu';
+
+  _editMenuOpen = false;
+  const addList = document.getElementById('editAddMenuList');
+  if(addList) addList.style.display='none';
+  const arr = document.getElementById('editAddMenuArrow');
+  if(arr) arr.textContent='▶';
+
+  renderEditItems();
+  renderEditMenuList();
+  updateEditTotal();
+
+  document.getElementById('editVisitModal').classList.add('open');
+}
+
+function closeEditVisit(){
+  document.getElementById('editVisitModal').classList.remove('open');
+}
+
+function renderEditItems(){
+  const el = document.getElementById('editVisitItems'); if(!el) return;
+  if(!_editItems.length){
+    el.innerHTML=`<div style="padding:16px;text-align:center;color:var(--tx3);font-size:12px">${lang==='ja'?'アイテムなし':'No items'}</div>`;
+    return;
+  }
+  el.innerHTML = _editItems.map((it,idx)=>{
+    const nm = lang==='en'&&it.nameEn ? it.nameEn : it.name;
+    const lineTotal = it.price * it.qty;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--bd);${it.cancelled?'opacity:.4;':''}">
+      <input type="checkbox" ${it.cancelled?'':'checked'} style="width:18px;height:18px;flex-shrink:0;cursor:pointer;"
+        onchange="toggleEditItemNew(${idx},this.checked)">
+      <span style="flex:1;font-size:13px;${it.cancelled?'text-decoration:line-through;':''}">${it.emoji}${nm}</span>
+      <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+        <button onclick="changeEditQty(${idx},-1)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--bd);background:var(--sf2);color:var(--tx);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;${it.cancelled?'pointer-events:none;':''}">−</button>
+        <span style="font-family:'Space Mono',monospace;font-size:14px;font-weight:700;min-width:20px;text-align:center;">${it.qty}</span>
+        <button onclick="changeEditQty(${idx},+1)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--bd);background:var(--sf2);color:var(--tx);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;${it.cancelled?'pointer-events:none;':''}">＋</button>
+      </div>
+      <span style="font-family:'Space Mono',monospace;font-size:13px;color:var(--ac2);min-width:70px;text-align:right;">¥${lineTotal.toLocaleString()}</span>
+      <button onclick="removeEditItem(${idx})" style="width:26px;height:26px;border-radius:50%;border:none;background:rgba(239,71,111,.2);color:var(--rd);cursor:pointer;font-size:14px;flex-shrink:0;">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function toggleEditItemNew(idx, checked){
+  if(_editItems[idx]) _editItems[idx].cancelled = !checked;
+  renderEditItems();
+  updateEditTotal();
+}
+
+function changeEditQty(idx, delta){
+  if(!_editItems[idx]) return;
+  if(_editItems[idx].cancelled) return;
+  const newQty = (_editItems[idx].qty||1) + delta;
+  if(newQty < 1){ removeEditItem(idx); return; }
+  _editItems[idx].qty = newQty;
+  renderEditItems();
+  updateEditTotal();
+}
+
+function removeEditItem(idx){
+  _editItems.splice(idx,1);
+  renderEditItems();
+  updateEditTotal();
+}
+
+function renderEditMenuList(){
+  const el = document.getElementById('editAddMenuList'); if(!el) return;
+  const available = menuItems.filter(m=>m.available);
+  if(!available.length){
+    el.innerHTML=`<div style="padding:10px;color:var(--tx3);font-size:12px">${lang==='ja'?'メニューなし':'No menu items'}</div>`;
+    return;
+  }
+  el.innerHTML = available.map(m=>{
+    const nm = lang==='en'&&m.nameEn ? m.nameEn : m.name;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--bd);">
+      ${m.image?`<img src="${m.image}" style="width:30px;height:30px;border-radius:4px;object-fit:cover;">`:`<span style="font-size:22px;">${m.emoji}</span>`}
+      <span style="flex:1;font-size:13px;">${nm}</span>
+      <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--tx2);">¥${m.price.toLocaleString()}</span>
+      <button onclick="addEditMenuItem(${m.id})"
+        style="padding:5px 12px;border-radius:6px;border:1px solid var(--ac);background:rgba(255,107,53,.15);color:var(--ac);cursor:pointer;font-size:12px;font-weight:600;">
+        ＋
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function addEditMenuItem(menuId){
+  const m = menuItems.find(x=>x.id===menuId); if(!m) return;
+  // 既にリストにある（cancelledでない）なら qty+1
+  const exist = _editItems.find(it=>it.name===m.name && !it.cancelled);
+  if(exist){ exist.qty++; }
+  else {
+    _editItems.push({
+      oi:-1, ii:-1,
+      name:m.name, nameEn:m.nameEn||m.name,
+      emoji:m.emoji||'🍽', price:m.price, qty:1, cancelled:false
+    });
+  }
+  renderEditItems();
+  updateEditTotal();
+}
+
+function toggleEditAddMenu(){
+  _editMenuOpen = !_editMenuOpen;
+  const list = document.getElementById('editAddMenuList');
+  const arr  = document.getElementById('editAddMenuArrow');
+  if(list) list.style.display = _editMenuOpen?'block':'none';
+  if(arr)  arr.textContent = _editMenuOpen?'▼':'▶';
+}
+
+function updateEditTotal(){
+  const total = _editItems.filter(it=>!it.cancelled).reduce((s,it)=>s+it.price*it.qty, 0);
+  const el = document.getElementById('editVisitTotal'); if(!el) return;
+  el.textContent = (lang==='ja'?'合計: ':'Total: ')+'¥'+total.toLocaleString();
+}
+
+function reCheckout(){
+  if(_editVid===null) return;
+  const v = visitHistory.find(x=>x.id===_editVid); if(!v) return;
+
+  // _editItems からordersを再構築
+  // oi===-1 は追加アイテム → 最後の order に追加（なければ新規作成）
+  const newOrders = [];
+  // 既存orderベースで更新
+  v.orders.forEach((o,oi)=>{
+    const items = _editItems
+      .filter(it=>it.oi===oi)
+      .map(it=>({
+        name:it.name, nameEn:it.nameEn, emoji:it.emoji,
+        price:it.price, qty:it.qty, cancelled:it.cancelled
+      }));
+    if(items.length){
+      const subtotal = items.filter(it=>!it.cancelled).reduce((s,it)=>s+it.price*it.qty,0);
+      newOrders.push({...o, items, subtotal});
+    }
+  });
+  // 追加アイテム（oi===-1）
+  const added = _editItems.filter(it=>it.oi===-1);
+  if(added.length){
+    const addItems = added.map(it=>({name:it.name,nameEn:it.nameEn,emoji:it.emoji,price:it.price,qty:it.qty,cancelled:false}));
+    const addSubtotal = addItems.reduce((s,it)=>s+it.price*it.qty,0);
+    if(newOrders.length){
+      // 最後のorderに追加
+      newOrders[newOrders.length-1].items.push(...addItems);
+      newOrders[newOrders.length-1].subtotal += addSubtotal;
+    } else {
+      newOrders.push({time:displayTime(Date.now()), items:addItems, subtotal:addSubtotal});
+    }
+  }
+
+  v.orders = newOrders;
+  v.total  = newOrders.reduce((s,o)=>s+o.subtotal,0);
+  v.checkoutTime = displayTime(Date.now())+'(修)';
+
+  saveVisits();
+  document.getElementById('editVisitModal').classList.remove('open');
+  // visitModal も更新（開いたままでOK）
+  showVisitDetail(_editVid);
+  renderVisits();
+  if(currentPageId==='report') renderReport();
+  showToast(lang==='ja'?'会計を修正しました':'Checkout updated');
+}
+
+function deleteVisit(id,e){
+  e.stopPropagation();
+  if(!confirm(t('confirm_del_item')))return;
+  visitHistory=visitHistory.filter(v=>v.id!==id);
+  saveVisits(); renderVisits(); renderReport();
+  showToast(t('toast_deleted'));
+}
+function deleteVisitsByDate(){
+  if(!confirm(t('confirm_del_date')))return;
+  visitHistory=visitHistory.filter(v=>v.bizDate!==visitDate);
+  saveVisits(); renderVisits(); renderReport(); buildDatePicker('visitDatePick',visitDate,d=>{visitDate=d;renderVisits();});
+  showToast(t('toast_history_del'));
+}
+function deleteAllVisits(){
+  if(!confirm(t('confirm_del_all')))return;
+  visitHistory=[]; saveVisits(); renderVisits(); renderReport();
+  showToast(t('toast_history_del'));
+}
+
+let currentVisitId=null;
+function showVisitDetail(id){
+  currentVisitId=id;
+  const v=visitHistory.find(x=>x.id===id); if(!v)return;
+  document.getElementById('visitDetail').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+      <div style="background:var(--sf2);border-radius:7px;padding:11px;text-align:center">
+        <div style="font-size:10px;color:var(--tx3);margin-bottom:3px">${t('th_table')}</div>
+        <div style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--ac)">T-${String(v.table).padStart(2,'0')}</div>
+      </div>
+      <div style="background:var(--sf2);border-radius:7px;padding:11px;text-align:center">
+        <div style="font-size:10px;color:var(--tx3);margin-bottom:3px">${t('th_people')}</div>
+        <div style="font-size:18px;font-weight:700">${v.people}${t('people_suffix')}</div>
+      </div>
+      <div style="background:var(--sf2);border-radius:7px;padding:11px;text-align:center">
+        <div style="font-size:10px;color:var(--tx3);margin-bottom:3px">${t('th_total')}</div>
+        <div style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--ac2)">¥${v.total.toLocaleString()}</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:10px">${v.checkinTime} → ${v.checkoutTime}</div>
+    <div style="background:var(--sf2);border-radius:8px;overflow:hidden">
+      ${v.orders.map((o,i)=>`
+        <div style="padding:10px 13px;border-bottom:1px solid var(--bd)">
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--tx3);margin-bottom:6px">${lang==='ja'?`注文 ${i+1}`:`Order ${i+1}`}：${o.time}</div>
+          ${o.items.map(it=>`
+            <div style="display:flex;align-items:center;gap:7px;font-size:12px;padding:3px 0">
+              <span style="font-size:17px">${it.emoji}</span>
+              <span style="flex:1;color:var(--tx2)">${lang==='en'&&it.nameEn?it.nameEn:it.name}</span>
+              <span style="color:var(--tx3);font-family:'Space Mono',monospace">×${it.qty}</span>
+              <span style="font-family:'Space Mono',monospace">¥${(it.price*it.qty).toLocaleString()}</span>
+            </div>`).join('')}
+          <div style="text-align:right;font-family:'Space Mono',monospace;font-size:11px;color:var(--tx2);margin-top:5px;border-top:1px solid var(--bd);padding-top:5px">¥${o.subtotal.toLocaleString()}</div>
+        </div>`).join('')}
+    </div>`;
+  document.getElementById('visitModal').classList.add('open');
+  const _eb=document.getElementById('editVisitBtnTxt');
+  if(_eb) _eb.textContent=lang==='ja'?'修正・再会計':'Edit & Re-checkout';
+}
+
+// =====================================================
+// REPORT
+// =====================================================
+function renderReport(){
+  const data=visitHistory.filter(v=>v.bizDate===reportDate);
+  const total=data.reduce((s,v)=>s+v.total,0);
+  document.getElementById('r-total').textContent=total.toLocaleString();
+  document.getElementById('r-orders').textContent=data.length;
+  document.getElementById('r-avg').textContent=data.length?Math.round(total/data.length).toLocaleString():0;
+  const ic={};
+  data.flatMap(v=>v.orders).forEach(o=>o.items.forEach(i=>{ic[i.name]=(ic[i.name]||0)+i.qty;}));
+  const top=Object.entries(ic).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('r-top').textContent=top?(lang==='en'&&visitHistory.flatMap(v=>v.orders).flatMap(o=>o.items).find(i=>i.name===top[0])?.nameEn||top[0]):'-';
+  const ms={}, mc={};
+  data.flatMap(v=>v.orders).forEach(o=>o.items.filter(i=>!i.cancelled).forEach(i=>{
+    ms[i.name]=(ms[i.name]||0)+i.price*i.qty;
+    mc[i.name]=(mc[i.name]||0)+i.qty;
+  }));
+  const sorted=Object.entries(ms).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxS=sorted[0]?.[1]||1;
+  const cols=['var(--ac)','var(--ac2)','var(--gn)','var(--bl)','#c77dff','#ff9f1c','#2ec4b6','#e71d36'];
+  document.getElementById('menuChart').innerHTML=sorted.length?sorted.map(([name,val],i)=>{
+    const qty=mc[name]||0;
+    const dispName=name.length>9?name.slice(0,8)+'…':name;
+    return`<div class="brow">
+      <div class="blbl" title="${name}">${dispName}</div>
+      <div class="btrk"><div class="bfil" style="width:${Math.round(val/maxS*100)}%;background:${cols[i%cols.length]}"></div></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;min-width:80px">
+        <div class="bval">¥${val.toLocaleString()}</div>
+        <div style="font-size:9px;color:var(--tx3);font-family:'Space Mono',monospace">${qty}${lang==='ja'?'個':'pcs'}</div>
+      </div>
+    </div>`;}).join('')
+  :`<div style="color:var(--tx3);font-size:12px;text-align:center;padding:18px">${t('no_sales')}</div>`;
+  // hourly by checkin time
+  const hourly={};
+  for(let h=19;h<=27;h++) hourly[h]=0; // 19~27 (27=03:00)
+  data.forEach(v=>{
+    const parts=v.checkinTime.split(':');
+    if(parts.length<2)return;
+    let h=parseInt(parts[0]);
+    if(h<4) h+=24; // midnight wrap
+    if(hourly[h]!==undefined) hourly[h]++;
+  });
+  const maxH=Math.max(...Object.values(hourly),1);
+  document.getElementById('hourlyChart').innerHTML=Object.entries(hourly).map(([h,cnt])=>`
+    <div class="hbar" style="height:${Math.round(cnt/maxH*82)+8}%" data-l="${h}:00" title="${h}:00 ${cnt}${lang==='ja'?'組':'parties'}"></div>`).join('');
+}
+
+// =====================================================
+// UTILS
+// =====================================================
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+let _tt;
+function showToast(msg,err=false){
+  const t_=document.getElementById('toast');
+  t_.textContent=msg; t_.style.borderLeftColor=err?'var(--rd)':'var(--gn)';
+  t_.classList.add('show'); clearTimeout(_tt); _tt=setTimeout(()=>t_.classList.remove('show'),3000);
+}
+
+// =====================================================
+// INIT
+// =====================================================
+setLang(lang);
+renderOrders();
+</script>
+<script>
+if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("/order-management-app/sw.js").catch(e=>console.warn(e)));
+</script>
+</body>
+</html>
